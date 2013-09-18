@@ -1,0 +1,10 @@
+python-json-logger==0.0.3
+pytz==2012j
+redis==2.4.11
+shortuuid==0.3
+six==1.2.0
+South==0.7.6
+statsd==2.0.1
+tagging==0.2.1
+Unidecode==0.04.12
+Wand
