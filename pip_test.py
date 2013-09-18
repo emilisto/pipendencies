@@ -4,9 +4,10 @@
 from gevent import monkey
 monkey.patch_all()
 
-#import gevent
-#from interact import interact
-#import sys
+import sys
+import gevent
+from semantic_version import Version
+from interact import interact
 
 def playaround():
     import pip
@@ -22,29 +23,38 @@ def playaround():
 
     interact()
 
-def find_latest_release(package):
-    import xmlrpclib
-    from pprint import pprint
-
+import xmlrpclib
+from pprint import pprint
+def find_versions(package):
     client = xmlrpclib.ServerProxy('http://pypi.python.org/pypi')
-    releases = client.package_releases(package)
-    pprint(releases)
+    return [ Version(v) for v in client.package_releases(package) ]
+    return versions
 
 from pip.req import parse_requirements, InstallRequirement
-def parse_reqs(reqs):
-    reqs = list(parse_requirements(reqfile))
-    interact()
-    print reqs
-    #return [ req.name for req in  ]
-
 def find_outdated(requirements):
+    # Find specified versions in requirements.txt
     reqs = [ InstallRequirement.from_line(req) for req in requirements ]
-    names = [ req.name for req in reqs ]
-    print reqs
-    print names
+    packages = [ req.name for req in reqs ]
 
-#find_releases()
+    # Determine latest versions from PyPi index
+    jobs = [ gevent.spawn(lambda p: (p, find_versions(p)[0],), p) for p in packages ]
+    gevent.joinall(jobs)
+    available = [ job.value for job in jobs ]
+    print available
 
-with open('./requirements.txt') as f:
-    find_outdated(f.readlines())
-#print parse_reqs('./requirements.txt')
+def find_outdated_test():
+    with open('./sample_requirements.txt') as f:
+        find_outdated(f.readlines())
+
+def find_versions_test():
+    packages = [ 'Django', 'requests', 'pip' ]
+
+    jobs = [ gevent.spawn(lambda p: (p, find_versions(p),), p) for p in packages ]
+    gevent.joinall(jobs)
+    print [ job.value for job in jobs ]
+
+def version_test():
+    print Version('1.0')
+#find_versions_test()
+#find_outdated_test()
+version_test()

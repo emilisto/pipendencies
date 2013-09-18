@@ -3,4 +3,6 @@ bpython==0.12
 gevent==0.13.8
 greenlet==0.4.1
 requests==1.2.1
+semantic-version==2.2.0
+semver==0.0.2
 wsgiref==0.1.2

@@ -7,4 +7,4 @@ South==0.7.6
 statsd==2.0.1
 tagging==0.2.1
 Unidecode==0.04.12
-Wand
+Django==1.5.1
