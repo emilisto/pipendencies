@@ -1,11 +1,12 @@
 import xmlrpclib
+
 from distutils.version import LooseVersion
 from pip.req import parse_requirements, InstallRequirement
 from enum import Enum
 
-PYPI_INDEX = 'http://pypi.python.org/pypi'
-
 class Requirement(InstallRequirement):
+
+    PYPI_INDEX = 'http://pypi.python.org/pypi'
 
     class Status(Enum):
         unspecified = 1
@@ -18,8 +19,13 @@ class Requirement(InstallRequirement):
     required_version = None
 
     def _fetch_pypi_version(self):
-        client = xmlrpclib.ServerProxy(PYPI_INDEX)
-        self._pypi_versions = [ LooseVersion(v) for v in client.package_releases(self.name) ]
+        client = xmlrpclib.ServerProxy(self.PYPI_INDEX)
+
+        # show_hidden=True gives us older versions of packages as well, which
+        # is good since it will help us in telling whether a specified version
+        # is invalid or just outdated.
+        self._pypi_versions = list(client.package_releases(self.name, True))
+
         return self.status is self.Status.uptodate
 
     @property
@@ -35,7 +41,10 @@ class Requirement(InstallRequirement):
 
     @property
     def latest_version(self):
-        return self.pypi_versions[0]
+        try:
+            return self.pypi_versions[0]
+        except IndexError:
+            return None
 
     @property
     def status(self):
@@ -43,7 +52,7 @@ class Requirement(InstallRequirement):
             return Requirement.Status.unspecified
         elif self.specified_version not in self.pypi_versions:
             return Requirement.Status.invalid
-        elif self.specified_version < self.latest_version:
+        elif LooseVersion(self.specified_version) < LooseVersion(self.latest_version):
             return Requirement.Status.outdated
         else:
             return Requirement.Status.uptodate
@@ -53,24 +62,3 @@ class Requirement(InstallRequirement):
         req = super(cls, Requirement).from_line(line)
         req._fetch_pypi_version()
         return req
-
-def check_requirements(requirements):
-
-    jobs = check_requirements(requirements)
-    gevent.joinall(jobs)
-    results = [ job.value for job in jobs ]
-    print results
-
-    # Determine packages to check
-    #jobs, requirements = [], []
-    #for req in reqs:
-        #try:
-            #version = req.absolute_versions.pop()
-            #jobs.append(gevent.spawn(lambda p: (p, fetch_versions(p)[0],), p))
-        #except IndexError:
-            #pass
-    #interact()
-
-    ## Determine latest versions from PyPi index
-    #available = [ job.value for job in jobs ]
-    #print available

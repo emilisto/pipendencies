@@ -29,5 +29,9 @@ class TestRequirements(unittest.TestCase):
         req = Requirement.from_line('Django')
         self.assertEquals(req.status, Requirement.Status.unspecified)
 
+        m.package_releases.return_value = []
+        req = Requirement.from_line('Django>=1.5.0')
+        self.assertEquals(req.latest_version, None)
+
 if __name__ == '__main__':
     unittest.main()
