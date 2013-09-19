@@ -6,8 +6,16 @@ monkey.patch_all()
 
 import sys
 import gevent
-from semantic_version import Version
+from distutils.version import StrictVersion, LooseVersion
 from interact import interact
+
+
+"""
+Good docs:
+
+    - http://docs.python.org/2/distutils/apiref.html#module-distutils.version
+
+"""
 
 def playaround():
     import pip
@@ -27,14 +35,14 @@ import xmlrpclib
 from pprint import pprint
 def find_versions(package):
     client = xmlrpclib.ServerProxy('http://pypi.python.org/pypi')
-    return [ Version(v) for v in client.package_releases(package) ]
-    return versions
+    return [ LooseVersion(v) for v in client.package_releases(package) ]
 
 from pip.req import parse_requirements, InstallRequirement
 def find_outdated(requirements):
     # Find specified versions in requirements.txt
     reqs = [ InstallRequirement.from_line(req) for req in requirements ]
     packages = [ req.name for req in reqs ]
+    interact()
 
     # Determine latest versions from PyPi index
     jobs = [ gevent.spawn(lambda p: (p, find_versions(p)[0],), p) for p in packages ]
@@ -53,8 +61,11 @@ def find_versions_test():
     gevent.joinall(jobs)
     print [ job.value for job in jobs ]
 
-def version_test():
-    print Version('1.0')
+def test_versions():
+    ver1 = LooseVersion('2013d')
+    ver2 = LooseVersion('2012d')
+    print "ver1 < ver2: %s" % (ver1 > ver2)
+
 #find_versions_test()
-#find_outdated_test()
-version_test()
+#test_versions()
+find_outdated_test()

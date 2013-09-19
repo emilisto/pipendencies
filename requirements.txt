@@ -1,7 +1,9 @@
 Pygments==1.6
 bpython==0.12
+enum34==0.9.18
 gevent==0.13.8
 greenlet==0.4.1
+mock==1.0.1
 requests==1.2.1
 semantic-version==2.2.0
 semver==0.0.2
